@@ -1,0 +1,103 @@
+import numpy as np
+from PIL import Image
+import os
+import filetype
+
+correct = False
+while(correct != True):
+    contrast = input("Enter a contrast value (from min = 10 to max = 0):\t")
+    try:
+        if not contrast.isdigit():
+            raise Exception("The contrast value must be set by a number!")
+        contrast = int(contrast)
+        if contrast < 0 or contrast > 10:
+            raise Exception("The entered contrast value is outside the range!")
+        correct = True
+    except Exception as err:
+        print("ERROR! ", err)
+    except Exception as err:
+        print("ERROR! ", err)
+
+
+ASCII_SYMBOLS = "  .,:;^!+*?]S%&8#@$№"
+ASCII_SYMBOLS = ASCII_SYMBOLS[:len(ASCII_SYMBOLS) - contrast]
+max_contrast = len(ASCII_SYMBOLS) - 1
+
+correct = False
+path = ""
+while(correct != True):
+    path = input("Enter the full path to the original image:\t")
+    try:
+        if not os.path.exists(path):
+            raise Exception("The path is set incorrectly!")
+        if not filetype.is_image(path):
+            raise Exception("The file is not an image!")
+        correct = True
+    except Exception as err:
+        print("ERROR! ", err)
+    except Exception as err:
+        print("ERROR! ", err)
+
+correct = False
+while(correct != True):
+    width = input("Enter the width of the creating image:\t")
+    try:
+        if not width.isdigit():
+            raise Exception("The width value must be set by a number!")
+        correct = True
+        width = int(width)
+    except Exception as input_err:
+        print("ERROR! ", input_err)
+
+image = Image.open(path)
+image = image.convert('L')
+
+original_width = image.size[0]
+original_height = image.size[1]
+ratio = original_height / original_width
+
+if width > 180:
+    width_for_file = 180
+else:
+    width_for_file = width
+
+height = int(width * ratio * 0.35)
+height_for_file = int(width_for_file * ratio * 0.45)
+
+image = image.resize((width, height))
+image_for_file = image.resize((width_for_file, height_for_file))
+
+arr_pixels = np.array(image)
+arr_pixels_for_file = np.array(image_for_file)
+
+ASCII_image = ""
+for i in range(height):
+    for j in range(width):
+        brightness = arr_pixels[i,j]
+        k = int(np.ceil(brightness/256 * max_contrast))
+        ASCII_image += ASCII_SYMBOLS[max_contrast-k]
+    ASCII_image += '\n'
+print(ASCII_image)
+
+ASCII_image_for_file = ""
+for i in range(height_for_file):
+    for j in range(width_for_file):
+        brightness = arr_pixels_for_file[i,j]
+        k = int(np.ceil(brightness/256 * max_contrast))
+        ASCII_image_for_file += ASCII_SYMBOLS[max_contrast-k]
+    ASCII_image_for_file += '\n'
+
+correct = False
+path = ""
+while(correct != True):
+    path = input("Enter the full path to save the image:\t")
+    try:
+        if not os.path.exists(path):
+            raise Exception("The path is set incorrectly!")
+        correct = True
+    except Exception as err:
+        print("ERROR! ", err)
+
+file_result = open(path + "/ascii_image.txt", "a")
+file_result = open(path + "/ascii_image.txt", "w")
+file_result.write(ASCII_image_for_file)
